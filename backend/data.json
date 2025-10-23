@@ -1,0 +1,5 @@
+{"messages":[
+  {"role":"system","content":"Bạn là trợ lý hải quan VN. Luôn ghi căn cứ pháp lý & ngày hiệu lực."},
+  {"role":"user","content":"Hồ sơ nhập khẩu thiết bị y tế loại B?"},
+  {"role":"assistant","content":"1) Đơn đăng ký… 2) Invoice… Nguồn: Thông tư XX/20YY/TT-BYT, Điều Z (hiệu lực 01/01/20BB)."}
+]}

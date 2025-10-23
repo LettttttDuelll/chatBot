@@ -1,0 +1,12 @@
+.env
+node_modules/
+npm-debug.log
+dist
+out.txt
+.xlsx
+.csv
+.venv/
+main.py
+__pycache__/
+sever.py
+compoments/
