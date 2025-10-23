@@ -103,17 +103,12 @@ export default function ChatApp() {
         for (const part of parts) {
           if (!part.startsWith("data: ")) continue;
           const data = part.slice(6).trim();
-          if (data === "[DONE]") {
-            // finalize
-            updateActiveConversation(conv => ({
-              ...conv,
-              messages: [...conv.messages, { role: "assistant", text: assistantText, time: Date.now() }]
-            }));
+            if (data === "[DONE]") {
+          
             setLoading(false);
             abortRef.current = null;
             return;
           }
-
           try {
             const json = JSON.parse(data);
             const piece = json.choices?.[0]?.text ?? "";

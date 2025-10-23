@@ -10,3 +10,4 @@ main.py
 __pycache__/
 sever.py
 compoments/
+Models/
