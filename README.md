@@ -4,6 +4,7 @@
 
 2. run server.py
 
+ or (Ctrl + Shift + P →  “Python: Select Interpreter” → Enter. → terminal → cd py → python server.py)
 <br/>
 <h6>new terminal</h6>
 
