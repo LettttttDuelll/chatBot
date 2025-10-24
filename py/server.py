@@ -9,7 +9,7 @@ import asyncio
 app = FastAPI()
 
 # -----------------------------
-# Cấu hình CORS (giống express)
+# CORS Middleware
 # -----------------------------
 origins = [
     "http://localhost:5173",
@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # -----------------------------
-# MODEL_URL (tùy chỉnh qua env)
+# Model URL configuration
 # -----------------------------
 MODEL_URL = os.getenv("MODEL_URL", "http://127.0.0.1:11434/v1/completions")
 
@@ -32,12 +32,6 @@ MODEL_URL = os.getenv("MODEL_URL", "http://127.0.0.1:11434/v1/completions")
 # -----------------------------
 @app.post("/api/stream")
 async def stream_api(request: Request):
-    """
-    Giống /api/stream trong Node.js:
-    - Nhận body JSON từ client
-    - Gửi đến MODEL_URL
-    - Trả về stream dữ liệu liên tục (text/event-stream)
-    """
     payload = await request.json()
 
     async def event_generator():
@@ -56,7 +50,7 @@ async def stream_api(request: Request):
         # Chỉ gửi lại những dòng bắt đầu bằng "data: "
                         if line.startswith("data: "):
                          yield f"{line}\n\n"
-        yield "data: [DONE]\n\n"  # báo kết thúc stream
+        yield "data: [DONE]\n\n"  # end of stream signal
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -66,10 +60,7 @@ async def stream_api(request: Request):
 @app.post("/api/complete")
 async def complete_api(request: Request):
     """
-    Giống /api/complete trong Node.js:
-    - Nhận body JSON
-    - Gửi request đến MODEL_URL
-    - Trả về JSON kết quả hoàn chỉnh
+    
     """
     payload = await request.json()
     payload["stream"] = False
@@ -85,7 +76,7 @@ async def complete_api(request: Request):
     return JSONResponse(content=data)
 
 # -----------------------------
-# 3️⃣ Chạy server
+# 3️⃣ Run server
 # -----------------------------
 if __name__ == "__main__":
     import uvicorn
