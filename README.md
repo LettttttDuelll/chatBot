@@ -1,7 +1,8 @@
 
-1. cd py
 
-2. python server.py
+1. click py folder
+
+2. run server.py
 
 <br/>
 <h6>new terminal</h6>
