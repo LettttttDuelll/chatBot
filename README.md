@@ -6,7 +6,7 @@
 <br/>
 <h6>new terminal</h6>
 
-3. cd backend
+3. cd frontend
 
 4. npm i install
 
