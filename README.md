@@ -1,8 +1,13 @@
-npm i install
 
-npm start
+1. cd py
+
+2. python server.py
 
 <br/>
-//////
+<h6>new terminal</h6>
 
-python server.py
+3. cd backend
+
+4. npm i install
+
+5. npm start
