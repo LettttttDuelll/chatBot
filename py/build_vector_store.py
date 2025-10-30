@@ -1,7 +1,7 @@
 import os
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_community.embeddings import OllamaEmbeddings
 
 DATA_DIR = "rag_data"
@@ -12,7 +12,11 @@ def load_documents():
     for root, _, files in os.walk(DATA_DIR):
         for name in files:
             path = os.path.join(root, name)
-            loader = TextLoader(path, encoding="utf-8")
+            ext = os.path.splitext(name)[1].lower()
+            if ext == ".pdf":
+                loader = PyPDFLoader(path)
+            else:
+                loader = TextLoader(path, encoding="utf-8")
             docs.extend(loader.load())
     return docs
 
