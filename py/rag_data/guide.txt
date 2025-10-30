@@ -1,0 +1,4 @@
+Local chatbot hướng dẫn sử dụng:
+- Bước 1: MỞ ứng dụng, chọn cuộc trò chuyện mới.
+- Bước 2: Nhập câu hỏi rõ ràng, cung cấp đủ bối cảnh.
+- Bước 3: Nếu cần thông tin nội bộ, sử dụng RAG để truy xuất dữ liệu.
