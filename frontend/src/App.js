@@ -56,6 +56,59 @@ export default function ChatApp() {
 
   const activeConv = conversations.find((c) => c.id === activeConvId) || null;
 
+  async function generateTitleStream(promptText, onUpdate) {
+    const payload = {
+      model: "llama3.2:1b",
+      prompt: promptText,
+      max_tokens: 50,
+      stream: true,
+    };
+
+    const controller = new AbortController();
+
+    const res = await fetch("http://localhost:8000/api/stream", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) throw new Error("API error when generating title");
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let titleText = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop() || "";
+
+      for (const part of parts) {
+        if (!part.startsWith("data: ")) continue;
+        const data = part.slice(6).trim();
+        if (data === "[DONE]") return titleText.trim().split(" ").slice(0, 5).join(" ");
+        try {
+          const json = JSON.parse(data);
+          const piece = json.choices?.[0]?.text ?? "";
+          if (piece) {
+            titleText += piece;
+            if (onUpdate) onUpdate(titleText); // callback update live
+          }
+        } catch (err) {
+          // ignore keepalive / parsing errors
+        }
+      }
+    }
+
+    return titleText.trim().split(" ").slice(0, 5).join(" ");
+  }
+
+
   const send = async () => {
     if (!input.trim() || !activeConvId) return;
     const userText = input.trim();
@@ -71,6 +124,21 @@ export default function ChatApp() {
     }));
 
     setLoading(true);
+    const isFirst = activeConv.messages.length === 0;
+    let newTitle = activeConv.title;
+    if (isFirst && (!activeConv.title || activeConv.title === "New chat")) {
+      //const promptTitle = "Tóm tắt tin nhắn sau thành một tiêu đề ngắn gọn, dễ hiểu, tối đa 5 từ: " + userText;
+      const promptTitle = "Tóm tắt tin nhắn sau thành một tiêu đề ngắn gọn, tối đa 5 từ: " + userText;
+
+      generateTitleStream(promptTitle, (partialTitle) => {
+        const shortTitle = partialTitle.trim().split(" ").slice(0, 6).join(" ");//linimit 6 words
+        updateActiveConversation((conv) => ({ ...conv, title: shortTitle }));
+        //updateActiveConversation((conv) => ({ ...conv, title: partialTitle }));
+      }).catch(() => {
+        updateActiveConversation((conv) => ({ ...conv, title: "Untitled" }));
+      });
+
+    }
 
     const payload = {
       model: "llama3.2:1b",
@@ -199,11 +267,10 @@ export default function ChatApp() {
               <li key={conv.id}>
                 <button
                   onClick={() => setActiveConvId(conv.id)}
-                  className={`w-full text-left p-2 rounded-md flex items-center justify-between ${
-                    conv.id === activeConvId
+                  className={`w-full text-left p-2 rounded-md flex items-center justify-between ${conv.id === activeConvId
                       ? "bg-gray-100"
                       : "hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <div className="truncate">{conv.title || "Untitled"}</div>
                   <div
@@ -258,6 +325,11 @@ export default function ChatApp() {
                 {activeConv.messages.map((m, idx) => (
                   <MessageBubble key={idx} message={m} />
                 ))}
+                {loading && (
+                  <div className="flex justify-start mb-4">
+                    <div className="w-6 h-6 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -307,11 +379,10 @@ function MessageBubble({ message }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[70%] p-3 rounded-lg ${
-          isUser
+        className={`max-w-[70%] p-3 rounded-lg ${isUser
             ? "bg-blue-600 text-white"
             : "bg-gray-100 text-gray-900"
-        }`}
+          }`}
       >
         <div style={{ whiteSpace: "pre-wrap" }}>{message.text}</div>
         <div className="text-xs text-gray-400 mt-2 text-right">{date}</div>
